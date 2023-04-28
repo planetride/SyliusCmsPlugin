@@ -61,9 +61,8 @@ final class PageUrlProvider implements UrlProviderInterface
     {
         return 'cms_pages';
     }
-    ####
-    
     public $currentChannel;
+    
     public function getChannel() {
         return $this->currentChannel;
     }
@@ -99,23 +98,18 @@ final class PageUrlProvider implements UrlProviderInterface
     public function getLocaleCodes(): array
     {
         /** @var ChannelInterface $channel */
-       # $channel = $this->channelContext->getChannel();
         $channel = $this->currentChannel;
 
         return $channel->getLocales()->map(function (LocaleInterface $locale) {
             return $locale->getCode();
         })->toArray();
     }
-public function getCountryCodeByLocale(string $locale): string {
+    public function getCountryCodeByLocale(string $locale): string {
        return $locale == 'en_US'?'us': explode("_",$locale)[0];
     }
     private function createPageUrl(PageInterface $page): UrlInterface
-    {$localCode=$this->currentChannel->getDefaultLocale()->getCode();
-//        $location = $this->router->generate('bitbag_sylius_cms_plugin_shop_page_show', [
-//            'slug' => $page->getTranslation($this->localeContext->getLocaleCode())->getSlug(),
-//            '_locale' => $this->localeContext->getLocaleCode(),
-//        ]);
- 
+    {
+        $localCode=$this->currentChannel->getDefaultLocale()->getCode();
         $location = $this->router->generate('bitbag_sylius_cms_plugin_shop_page_show', [
             'slug' => $page->getTranslation($localCode)->getSlug(),
             '_locale' => $localCode,
@@ -135,10 +129,7 @@ public function getCountryCodeByLocale(string $locale): string {
 
         /** @var PageTranslationInterface $translation */
         foreach ($this->getTranslations($page) as $translation) {
-//            if (!$translation->getLocale() || !$this->localeInLocaleCodes($translation) || $translation->getLocale() === $this->localeContext->getLocaleCode()) {
-//                continue;
-//            }
-            //dd($this->localeInLocaleCodes($translation));
+
             if (!$translation->getLocale() || !$this->localeInLocaleCodes($translation) || $translation->getLocale() === $this->localeContext->getLocaleCode()) {
                 continue;
             }
