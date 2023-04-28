@@ -61,11 +61,17 @@ final class PageUrlProvider implements UrlProviderInterface
     {
         return 'cms_pages';
     }
+    ####
+    
+    public $currentChannel;
+    public function getChannel() {
+        return $this->currentChannel;
+    }
 
     public function generate(ChannelInterface $channel): iterable
     {
         $urls = [];
-
+        $this->currentChannel=$channel;
         foreach ($this->getPages() as $page) {
             $urls[] = $this->createPageUrl($page);
         }
@@ -81,7 +87,7 @@ final class PageUrlProvider implements UrlProviderInterface
     }
 
     private function localeInLocaleCodes(TranslationInterface $translation): bool
-    {
+    {//dump($this->getLocaleCodes());die;
         return in_array($translation->getLocale(), $this->getLocaleCodes());
     }
 
@@ -90,21 +96,30 @@ final class PageUrlProvider implements UrlProviderInterface
         return $this->pageRepository->findEnabled(true);
     }
 
-    private function getLocaleCodes(): array
+    public function getLocaleCodes(): array
     {
         /** @var ChannelInterface $channel */
-        $channel = $this->channelContext->getChannel();
+       # $channel = $this->channelContext->getChannel();
+        $channel = $this->currentChannel;
 
         return $channel->getLocales()->map(function (LocaleInterface $locale) {
             return $locale->getCode();
         })->toArray();
     }
-
+public function getCountryCodeByLocale(string $locale): string {
+       return $locale == 'en_US'?'us': explode("_",$locale)[0];
+    }
     private function createPageUrl(PageInterface $page): UrlInterface
-    {
+    {$localCode=$this->currentChannel->getDefaultLocale()->getCode();
+//        $location = $this->router->generate('bitbag_sylius_cms_plugin_shop_page_show', [
+//            'slug' => $page->getTranslation($this->localeContext->getLocaleCode())->getSlug(),
+//            '_locale' => $this->localeContext->getLocaleCode(),
+//        ]);
+ 
         $location = $this->router->generate('bitbag_sylius_cms_plugin_shop_page_show', [
-            'slug' => $page->getTranslation($this->localeContext->getLocaleCode())->getSlug(),
-            '_locale' => $this->localeContext->getLocaleCode(),
+            'slug' => $page->getTranslation($localCode)->getSlug(),
+            '_locale' => $localCode,
+            'countryCode'=>$this->getCountryCodeByLocale($localCode)
         ]);
 
         $pageUrl = $this->sitemapUrlFactory->createNew($location);
@@ -120,6 +135,10 @@ final class PageUrlProvider implements UrlProviderInterface
 
         /** @var PageTranslationInterface $translation */
         foreach ($this->getTranslations($page) as $translation) {
+//            if (!$translation->getLocale() || !$this->localeInLocaleCodes($translation) || $translation->getLocale() === $this->localeContext->getLocaleCode()) {
+//                continue;
+//            }
+            //dd($this->localeInLocaleCodes($translation));
             if (!$translation->getLocale() || !$this->localeInLocaleCodes($translation) || $translation->getLocale() === $this->localeContext->getLocaleCode()) {
                 continue;
             }
@@ -127,6 +146,7 @@ final class PageUrlProvider implements UrlProviderInterface
             $location = $this->router->generate('bitbag_sylius_cms_plugin_shop_page_show', [
                 'slug' => $translation->getSlug(),
                 '_locale' => $translation->getLocale(),
+                'countryCode'=>$this->getCountryCodeByLocale($localCode)
             ]);
 
             $pageUrl->addAlternative(new AlternativeUrl($location, $translation->getLocale()));
