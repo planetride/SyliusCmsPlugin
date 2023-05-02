@@ -1,8 +1,8 @@
 bitbag_sylius_cms_plugin_shop_page_show:
-    path: /page/{slug}
+    path: /{countryCode}/{_locale}/page/{slug}
     methods: [GET]
     defaults:
-        _controller: bitbag_sylius_cms_plugin.controller.page.overriden::showAction
+        _controller: bitbag_sylius_cms_plugin.controller.page.overriden:showAction
         _sylius:
             template: "@BitBagSyliusCmsPlugin/Shop/Page/show.html.twig"
             repository:
