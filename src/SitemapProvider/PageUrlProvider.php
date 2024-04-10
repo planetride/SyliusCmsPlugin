@@ -105,7 +105,7 @@ final class PageUrlProvider implements UrlProviderInterface
         })->toArray();
     }
     public function getCountryCodeByLocale(string $locale): string {
-       return $locale == 'en_US'?'us': explode("_",$locale)[0];
+        return strtolower(explode("_",$locale)[1]);      
     }
     private function createPageUrl(PageInterface $page): UrlInterface
     {
